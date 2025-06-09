@@ -1,13 +1,23 @@
 trigger:
-- main  # or your default branch
+- main   # or your actual default branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Hosted agent
+  vmImage: 'ubuntu-latest'  # Use Microsoft-hosted Ubuntu agent
 
 steps:
 - task: Maven@3
+  displayName: 'Build and Test with Maven'
   inputs:
-    mavenPomFile: 'pom.xml'                 # Path to your pom.xml
-    goals: 'clean install'                  # Build goal
-    publishJUnitResults: true               # Enable test report publishing
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test result path
+    mavenPomFile: 'pom.xml'           # Path to pom.xml
+    goals: 'clean install'            # Maven goals (clean + build + test)
+    publishJUnitResults: true         # Publish JUnit test results to Azure DevOps
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Path to test result files
+
+# Optional: Publish code coverage results if JaCoCo is configured in your Maven build
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish Code Coverage Results'
+  inputs:
+    codeCoverageTool: 'JaCoCo'
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/jacoco.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/**/jacoco-html'
+    failIfCoverageEmpty: true
