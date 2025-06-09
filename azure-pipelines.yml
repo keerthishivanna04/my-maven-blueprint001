@@ -1,22 +1,13 @@
 trigger:
-- master   # ✅ Use your actual branch name
+- main  # or your default branch
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-latest'  # Hosted agent
 
 steps:
-- task: Maven@4
-  displayName: 'Build and Test with Maven'
+- task: Maven@3
   inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean install'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-
-- task: PublishCodeCoverageResults@2
-  displayName: 'Publish Code Coverage Results'
-  inputs:
-    codeCoverageTool: 'JaCoCo'
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/jacoco.xml'
-    reportDirectory: '$(System.DefaultWorkingDirectory)/**/jacoco-html'
-    failIfCoverageEmpty: true
+    mavenPomFile: 'pom.xml'                 # Path to your pom.xml
+    goals: 'clean install'                  # Build goal
+    publishJUnitResults: true               # Enable test report publishing
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test result path
