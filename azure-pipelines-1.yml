@@ -1,0 +1,34 @@
+trigger:
+- master  # or your default branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+# ---------- Stage 1: Build ----------
+- stage: Build
+  displayName: 'Build Maven Project'
+  jobs:
+  - job: MavenBuild
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        options: '-X'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        mavenVersionOption: 'Default'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        failTaskOnFailedTests: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
