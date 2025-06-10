@@ -1,13 +1,53 @@
 trigger:
-- main  # or your default branch
+- master  # or your default branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Hosted agent
+  vmImage: 'ubuntu-latest'
 
-steps:
-- task: Maven@4
-  inputs:
-    mavenPomFile: 'pom.xml'                 # Path to your pom.xml
-    goals: 'clean install'                  # Build goal
-    publishJUnitResults: true               # Enable test report publishing
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test result path
+# ---------- Stage 1: Build ----------
+stages:
+- stage: Build
+  displayName: 'Build Maven Project'
+  jobs:
+  - job: MavenBuild
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'clean package'
+        options: '-X'  # verbose logging (optional)
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.11'
+        mavenVersionOption: 'Default'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        failTaskOnFailedTests: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+# ---------- Stage 2: Deploy ----------
+- stage: Deploy
+  displayName: 'Deploy to Test Environment'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy Artifact'
+    steps:
+    - download: current
+      artifact: drop
+
+    - script: |
+        - task: AzureWebApp@1
+          inputs:
+          azureSubscription: '<your-service-connection>'
+          appName: '<your-app-name>'
+          package: '$(Pipeline.Workspace)/drop/*.jar'
