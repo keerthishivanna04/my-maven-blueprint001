@@ -11,7 +11,7 @@ stages:
   jobs:
   - job: MavenBuild
     steps:
-    - task: Maven@3
+    - task: Maven@4
       inputs:
         mavenPomFile: 'pom.xml'
         goals: 'clean package'
@@ -48,6 +48,6 @@ stages:
     - script: |
         - task: AzureWebApp@1
           inputs:
-          azureSubscription: '<your-service-connection>'
+          azureSubscription: 'MyAzureConnection'
           appName: '<your-app-name>'
           package: '$(Pipeline.Workspace)/drop/*.jar'
