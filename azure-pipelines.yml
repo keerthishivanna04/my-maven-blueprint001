@@ -49,5 +49,5 @@ stages:
         - task: AzureWebApp@1
           inputs:
           azureSubscription: 'MyAzureConnection'
-          appName: '<your-app-name>'
+          appName: 'webApp'
           package: '$(Pipeline.Workspace)/drop/*.jar'
