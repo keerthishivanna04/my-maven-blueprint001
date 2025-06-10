@@ -33,3 +33,21 @@ stages:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
+# ---------- Stage 2: Deploy ----------
+- stage: Deploy
+  displayName: 'Deploy to Test Environment'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy Artifact'
+    steps:
+    - download: current
+      artifact: drop
+
+    - script: |
+        - task: AzureWebApp@1
+          inputs:
+          azureSubscription: 'MyAzureConnection'
+          appName: 'webApp'
+          package: '$(Pipeline.Workspace)/drop/*.jar'
