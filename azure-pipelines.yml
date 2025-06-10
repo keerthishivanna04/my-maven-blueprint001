@@ -4,8 +4,8 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# ---------- Stage 1: Build ----------
 stages:
+# ---------- Stage 1: Build ----------
 - stage: Build
   displayName: 'Build Maven Project'
   jobs:
@@ -15,7 +15,7 @@ stages:
       inputs:
         mavenPomFile: 'pom.xml'
         goals: 'clean package'
-        options: '-X'  # verbose logging (optional)
+        options: '-X'
         javaHomeOption: 'JDKVersion'
         jdkVersionOption: '1.11'
         mavenVersionOption: 'Default'
@@ -45,9 +45,8 @@ stages:
     - download: current
       artifact: drop
 
-    - script: |
-        - task: AzureWebApp@1
-          inputs:
-          azureSubscription: 'MyAzureConnection'
-          appName: 'webApp'
-          package: '$(Pipeline.Workspace)/drop/*.jar'
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: 'MyAzureConnection'      # Use your actual service connection name
+        appName: 'webApp'                            # Use your actual App Service name
+        package: '$(Pipeline.Workspace)/drop/*.jar'  # Make sure this JAR is valid for Web App
